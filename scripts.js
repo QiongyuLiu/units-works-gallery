@@ -221,6 +221,36 @@ document.querySelectorAll('.middle-item').forEach(item => {
   });
 });
 
+/* ===== 在所有 gallery 组里确保左右按钮为 SVG（自动创建或替换） ===== */
+function ensureSvgArrowButtons () {
+  const prevSVG = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 4 L7 12 L15 20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const nextSVG = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 4 L17 12 L9 20"  fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  document.querySelectorAll('.gallery-group .gallery-bottom-row').forEach(row => {
+    let prev = row.querySelector('.viewer-prev');
+    let next = row.querySelector('.viewer-next');
+
+    if (!prev) {
+      prev = document.createElement('button');
+      prev.className = 'viewer-prev';
+      prev.setAttribute('aria-label','Previous');
+      row.appendChild(prev);
+    }
+    if (!next) {
+      next = document.createElement('button');
+      next.className = 'viewer-next';
+      next.setAttribute('aria-label','Next');
+      row.appendChild(next);
+    }
+    prev.innerHTML = prevSVG;
+    next.innerHTML = nextSVG;
+  });
+}
+
+/* 在绑定左右切换事件之前执行 */
+ensureSvgArrowButtons();
+
+
 document.querySelectorAll('.gallery-group').forEach(group => {
   const btnPrev = group.querySelector('.viewer-prev');
   const btnNext = group.querySelector('.viewer-next');
@@ -284,3 +314,152 @@ document.querySelectorAll('#unitGallery figure').forEach(fig => {
     updateSubNav();
   });
 });
+// ===== 默认展开 gallery-complex 的第一组 =====
+window.addEventListener('DOMContentLoaded', () => {
+  const firstGroup = document.querySelector('.gallery-group'); // 第一组
+  if (firstGroup) {
+    toggleActive(document.querySelectorAll('.gallery-group'), firstGroup.id);
+    firstGroup.classList.add('active');
+    activateGroupImage(firstGroup, 0); // 显示第 0 张大图
+  }
+});
+
+
+/* ========== Unit 3 子导航切换（基于 href 的 hash） ========== */
+(function () {
+  const unit3 = document.getElementById('Unit3');
+  if (!unit3) return;
+
+  const links  = Array.from(unit3.querySelectorAll('.u3-subnav__link'));
+  const panels = Array.from(unit3.querySelectorAll('div[id^="u3-"]'));
+  if (!links.length || !panels.length) return;
+
+  function showPanelById(id, updateHash = true) {
+    panels.forEach(p => { p.hidden = (p.id !== id); });
+    links.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#' + id));
+    if (updateHash) {
+      try { history.replaceState(null, '', '#' + id); } catch (e) {}
+    }
+  }
+
+  links.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const id = link.getAttribute('href').replace('#', '');
+      if (id) showPanelById(id, true);
+    });
+  });
+
+  // 初始：若 hash 命中就用 hash，否则显示第一个
+  const h = location.hash.replace('#', '');
+  const init = panels.some(p => p.id === h) ? h : panels[0].id;
+  showPanelById(init, false);
+})();
+
+// Unit3 的 Gallery Hub：点击缩略图 → 跳到对应页面/区块
+document.querySelectorAll('#u3-Gallery [data-target]').forEach(el => {
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    const targetId  = el.dataset.target;      // 目标 section 的 id（如 Unit1 / sectionE / Gallery-series-1）
+    const scrollSel = el.dataset.scroll || ''; // 可选：到达后滚到某锚点
+
+    // 关闭所有 section，激活目标
+    document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+    document.getElementById(targetId)?.classList.add('active');
+
+    // 如需滚到目标里的具体位置
+    if (scrollSel) document.querySelector(scrollSel)?.scrollIntoView({ behavior: 'smooth' });
+
+    scrollToTop();
+    savePageState();
+    updateSubNav();
+    if (typeof closeLightbox === 'function') closeLightbox();
+  });
+});
+
+/* === Unit-3 顶部子导航：悬浮版开关 === */
+let u3StickyNav = null;
+
+function bindU3Subnav(root) {
+  // 复用你 Unit-3 子导航现有的 hash 切换逻辑：点击时只切到 #u3-xxx 面板
+  root.querySelectorAll('.u3-subnav__link').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const id = a.getAttribute('href')?.replace('#', '');
+      // 回到 Unit-3 区域并切换 Panel
+      document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+      document.getElementById('Unit3')?.classList.add('active');
+      const panel = id ? document.getElementById(id) : null;
+      if (panel) {
+        // 隐藏其它 u3 面板
+        document.querySelectorAll('#Unit3 div[id^="u3-"]').forEach(p => p.hidden = true);
+        panel.hidden = false;
+      }
+      // 既然回到 Unit-3，就可以关掉悬浮导航
+      disableU3Sticky();
+      scrollToTop();
+      savePageState();
+      updateSubNav();
+      if (typeof closeLightbox === 'function') closeLightbox();
+    });
+  });
+}
+
+function enableU3Sticky () {
+  // 找到 Unit-3 原本的子导航（你站里它通常是 .u3-subnav 容器）
+  const u3Local = document.querySelector('#Unit3 .u3-subnav');
+  if (!u3Local) return;
+  if (!u3StickyNav) {
+    u3StickyNav = u3Local.cloneNode(true);
+    u3StickyNav.id = 'u3StickyNav';
+    u3StickyNav.classList.add('u3-sticky');
+    document.body.appendChild(u3StickyNav);
+    bindU3Subnav(u3StickyNav);
+  }
+  u3StickyNav.style.display = 'block';
+  document.body.classList.add('u3-sticky-padding');
+}
+function disableU3Sticky () {
+  if (u3StickyNav) u3StickyNav.style.display = 'none';
+  document.body.classList.remove('u3-sticky-padding');
+}
+
+/* === 挂钩 1：Unit-3 → Gallery Hub 缩略图点击时，开启悬浮导航 === */
+// 你前面加过的委托里，插入 enableU3Sticky()：
+// 注意你的 Unit-3 面板 id：u3-gallery / u3-Gallery，按你文件里实际大小写来
+document.addEventListener('click', function (e) {
+  const el = e.target.closest('#u3-Gallery [data-target]'); // ← 如果是小写就改成 '#u3-gallery'
+  if (!el) return;
+  e.preventDefault();
+  const targetId  = el.dataset.target;
+  const scrollSel = el.dataset.scroll || '';
+
+  // 开启悬浮的 Unit-3 子导航
+  enableU3Sticky();
+
+  // 切换到目标页面
+  document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+  document.getElementById(targetId)?.classList.add('active');
+  if (scrollSel) document.querySelector(scrollSel)?.scrollIntoView({ behavior: 'smooth' });
+
+  scrollToTop();
+  savePageState();
+  updateSubNav();
+  if (typeof closeLightbox === 'function') closeLightbox();
+});
+
+/* === 挂钩 2：从侧栏切换其它主页面时，自动关闭悬浮导航 === */
+document.querySelectorAll('#navList li').forEach(item => {
+  item.addEventListener('click', () => {
+    const targetId = item.dataset.target;
+    // 如果进入 Unit-3，本地导航可见，不需要悬浮；否则收起
+    if (targetId === 'Unit3') {
+      disableU3Sticky();
+    } else {
+      disableU3Sticky();
+    }
+  });
+});
+
+
+

@@ -17,27 +17,28 @@ body {
 /* ========== CUSTOM FONTS ========== */
 @font-face {
   font-family: 'Cargo1';
-  src: url('static/font/ABCDiatypeVariable-Trial.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'Cargo2';
   src: url('static/font/ABCDiatypeMonoVariable-Trial.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Cargo3';
+  font-family: 'Cargo2';
   src: url('static/font/Cargo-DiatypePlusVariable.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Cargo4';
-  src: url('static/font/Cargo-DiatypePlusVariable-Italic.woff2') format('woff2');
+  font-family: 'Cargo3';
+  src: url('static/font/ASV.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
+}
+@font-face {
+  font-family: 'Cargo3';
+  src: url('static/font/ASV.woff2') format('woff2'); /* 同一文件，暴露 italic 轴 */
+  font-weight: 100 900;
+  font-style: italic;     /* ← 没这条，浏览器不会切斜体 */
+  font-display: swap;
 }
 
 /* 隐藏仅供屏幕阅读器的文本 */
@@ -168,31 +169,32 @@ body {
 .page-section h2 {
   font-size: 2.15rem;
   font-weight: 530;
-  font-family: 'Cargo3', sans-serif;
+  font-family: 'Cargo2', sans-serif;
   margin-bottom: 0.75rem;
   line-height: 1.3;
 }
 .page-section h3 {
-  font-family: 'Cargo3', sans-serif;
+  font-family: 'Cargo2', sans-serif;
   font-size: 1.7rem;
   color: #333;
   font-weight: 100;
   margin-top: -0.53rem;
 }
 .subtitle {
-  font-family: 'Cargo2', sans-serif;
+  font-family: 'Cargo1', sans-serif;
   font-size: 0.93rem;
   color: #AAA;
   font-weight: 100;
 }
 .page-section p {
-  font-size: 1.5rem;
+  font-size: 1.55rem;
   font-family: 'Cargo3', sans-serif;
-  font-variation-settings: 'wght' 340;
+  font-variation-settings: 'wght' 310;
   color: #444;
   margin-top: -0.2rem;
   line-height: 1.23;   /* 1.0–1.3 之间越小越紧凑 */
 }
+
 
 /* ========== GALLERY LAYOUT ========== */
 .gallery {
@@ -205,21 +207,6 @@ body {
   display: block;
   height: auto;
   max-width: 600px;
-  border-radius: 15px;
-  cursor: pointer;
-  object-fit: contain;
-}
-.haofan {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  align-items: flex-start;
-  margin-top: 1.5rem; 
-}
-.haofan img {
-  display: block;
-  height: auto;
-  max-width: 290px;
   border-radius: 15px;
   cursor: pointer;
   object-fit: contain;
@@ -272,17 +259,9 @@ body {
 .unit-gallery img{
   width: 100%;
   height: auto;
-  border-radius: 8px;
-  transition: transform .2s ease;
+  border-radius: 55px;
   cursor: pointer;
 }
-/* ——公共放大—— */
-.unit-gallery img:hover{
-  transform: scale(1.05);
-}
-/* ——各自锚点—— */
-.anchor-tr      img{ transform-origin: 50% 100%; }
-.anchor-center      img{ transform-origin: 100% 50%; }
 
 /* ——移动端退化：两列 / 单列（可保留也可删）—— */
 @media (max-width: 900px){ .unit-gallery{ grid-template-columns: repeat(2,1fr);} }
@@ -348,27 +327,26 @@ body {
   gap: 1rem;
   margin: 1rem auto;
   position: relative;
+  padding: 0 3rem; /* ← 左右留出“边带”给按钮，不再压在图上 */
 }
 .viewer-large {
   display: block;
   margin: 0 auto;
-  max-width: 1000px;
+  max-width: 1000px;      /* 控制大图宽度 */
   height: auto;
-  border: 1px solid #ccc;
   border-radius: 15px;
-  cursor: pointer;
+  cursor: pointer;        /* 点击可放大 */
 }
 .viewer-prev, .viewer-next {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: none;
-  background: #ccc;
+  background: #c9c9c9;
   color: #fff;
-  font-size: 1.2rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -385,6 +363,56 @@ body {
   opacity: 1;
   pointer-events: auto;
 }
+
+/* ---------- Unit-2  three-column gallery ---------- */
+/* —— 整体三列横排 —— */
+.gallery-complex{
+  display:flex;          /* 横向 */
+  gap:1rem;              /* 三列间距 */
+}
+
+/* 左列：Top 两张图（竖排） */
+.gallery-complex>.gallery-top-row{
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+  width:110px;           /* ← 图宽＝列宽，改这里即可 */
+}
+.gallery-complex>.gallery-top-row img{
+  width:100%;
+  height:auto;
+}
+
+/* 中＋右列：放在同一个网格里 72px | 自动 */
+.gallery-group.horiz.active{
+  display:grid;
+  grid-template-columns:75px 1fr; /* 中列小图 72，右列大图自适应 */
+  gap:1rem;
+}
+/* 中列缩略图：竖排方块 */
+.gallery-group.horiz .gallery-middle-row{
+  flex-direction:column;
+  gap:1rem;
+}
+.gallery-group.horiz .gallery-middle-row img{
+  width:100%;
+  height:auto;
+  object-fit:cover;
+}
+/* 让 viewer 占满右侧那一格 */
+/* 右列大图 */
+.gallery-group.horiz .viewer-large{
+  width:1000px;
+  max-width:calc(100% - 10px);  /* ← 调这里的数字 */
+  height:auto;
+}
+
+/* 若仍居中留白，把行内自适应改成靠左 */
+.gallery-group.horiz .gallery-bottom-row{
+  justify-content:flex-start;
+}
+
+
 
 /* ========== P-GALLERY ========== */
 .p-gallery {
@@ -457,7 +485,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 .image-block figure {
   display: flex;
@@ -469,7 +497,7 @@ body {
 .image-block img {
   max-width: 100%;
   height: auto;
-  border-radius: 4px;
+  border-radius: 15px;
   cursor: pointer;
 }
 .image-block figcaption {
@@ -545,7 +573,7 @@ body {
   display: none;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 100000;
   animation-fill-mode: forwards;
 }
 .lightbox-overlay.active {
@@ -632,6 +660,274 @@ body {
 }
 .prints-nav a:hover {
   color: #000;
+}
+
+/* ===== Unit 3 Sub Nav  ===== background: #dbd6d2; /* 与截图相近的暖灰 *//*border-top: 6px solid #3b3b3b; /* 顶部深灰条 */  /*color: #9aa0a4; /* 左侧品牌灰 */
+.u3-subnav {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+
+}
+
+.u3-subnav__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.u3-subnav__list {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.u3-subnav__link {
+  text-decoration: none;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  color: #0b0b0b;
+  transition: color 120ms ease, opacity 120ms ease;
+}
+
+.u3-subnav__link:hover,
+.u3-subnav__link:focus {
+  opacity: 0.7;
+}
+
+.u3-subnav__link.is-active {
+  color: #e04a35; /* 激活项红色，匹配截图 */
+  font-weight: 700; 
+}
+
+/* Unit 3 → Practice：双列容器 */
+.u3-two-col{
+  display: grid;
+  grid-template-columns: 1fr 1fr;  /* 左右各一列 */
+  gap: 1.5rem;
+}
+/* 每一列里用各自的 p-gallery（取消原 flex，改为竖向流）*/
+.u3-two-col .p-gallery{
+  display: block;   /* 覆盖原来的 flex */
+  margin: 0;
+  padding: 0;
+}
+/* 如果希望单列里也做“轻量瀑布流”，给该列加 masonry 类 */
+.u3-two-col .p-gallery.masonry{
+  column-count: 1;      /* 默认单列垂直排 */
+  column-gap: 1.5rem;
+}
+.u3-two-col .p-gallery.masonry figure{
+  break-inside: avoid;
+  margin: 0 0 1.5rem 0;
+}
+.u3-two-col .p-gallery img{
+  width: 100%;
+  max-width: none;      /* 盖掉原 .p-gallery img 的 500px 限制 */
+  height: auto;
+  border-radius: 15px;
+  display: block;
+}
+
+/* Unit 3 → Practice 左列：首行整幅 + 次行三列 */
+.u3-left-grid.gallery{
+  display: grid;                     /* 覆盖 .gallery 的 flex */
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: auto;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+}
+.u3-left-grid.gallery figure{
+  margin: 0;
+}
+.u3-left-grid.gallery img{
+  width: 100%;
+  height: auto;
+  max-width: none;                   /* 不受其他 500px 限制 */
+  display: block;
+  border-radius: 15px;
+}
+/* 第一张图横跨整行 */
+.u3-left-grid.gallery .wide{
+  grid-column: 1 / -1;
+}
+/* 如果希望三张“更像缩略图”，可启用裁切比例： */
+.u3-left-grid.gallery .thumb img{
+  aspect-ratio: 1 / 1;               /* 或 1 / 1 */
+  object-fit: cover;
+}
+/* --- Unit 3 → Practice 左列：第三组三图叠层 --- */
+.stacked-group{
+  position: relative;
+  /* 跟 .wide 一样横跨整行，但视觉略小一点 */
+  grid-column: 1 / -1;
+  width: 80%;
+  margin: 0 auto;
+
+  aspect-ratio: 4 / 3;
+  overflow: visible;          /* 悬停扇出需要外溢 */
+  will-change: transform;
+}
+
+.stacked-group img{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+/* 三层轻微偏移，让人看出叠放 */
+.stacked-group img:nth-child(1){
+  transform: translate(-14px, -12px) rotate(-5deg);
+  z-index: 1;
+}
+.stacked-group img:nth-child(2){
+  transform: translate(0, 0) rotate(1deg);
+  z-index: 2;
+}
+.stacked-group img:nth-child(3){
+  transform: translate(14px, 12px) rotate(6deg);
+  z-index: 3;
+}
+
+/* 悬停时浮起 */
+.stacked-group:hover img:nth-child(1){
+  transform: translate(-46px, -24px) rotate(-12deg);
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+}
+.stacked-group:hover img:nth-child(2){
+  transform: translate(0, 0) rotate(0deg) scale(1.03);
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+}
+.stacked-group:hover img:nth-child(3){
+  transform: translate(46px, 24px) rotate(12deg) scale(1.03);
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+}
+
+/* 让普通两图严格各占 50% 且图片铺满 figure */
+.image-block.two-up{ align-items:stretch; gap: 2rem; }
+.image-block.two-up figure{ flex:1 1 45%; }
+.image-block.two-up img{ width:100%; height:auto; }
+
+/* 控制一行能放几张图 —— 每张大约占父容器宽度的比例 */
+.p-gallery.three-up > figure {
+  flex: 0 1 calc(33.333% - 1rem);
+}
+.p-gallery.four-up > figure {
+  flex: 0 1 calc(25% - 1rem);
+}
+.p-gallery.three-up img,
+.p-gallery.four-up img {
+  width: 100%;
+  height: auto;
+  max-width: none; /* 避免 500px 限制 */
+}
+
+/* 可选：让 Unit3 这个容器复用同款样式 */
+#illus-series-gallery-u3 { display: flex; flex-wrap: wrap; gap: 3rem; max-width: 90%; }
+#illus-series-gallery-u3 figcaption { margin-top: 1rem; }
+#illus-series-gallery-u3 img {
+  max-width: 100%; max-height: 300px; height: auto; cursor: pointer;
+  border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,.1); object-fit: cover;
+}
+
+/* —— Unit-3 顶部子导航的悬浮版 —— */
+#u3StickyNav.u3-sticky {
+  position: fixed;
+  top: 0;
+  left: 375.5px;                 /* 与 .main-content 的左侧对齐，按你侧栏宽度调整 */
+  width: calc(100% - 375.5px);
+  z-index: 9999;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  padding: 0.6rem 1rem;
+}
+/* 悬浮时，给主体加上顶部内边距，避免被覆盖（可按实际高度微调）*/
+body.u3-sticky-padding .main-content {
+  padding-top: 3.2rem;
+}
+
+/* —— 修正遗漏点号的选择器（务必改正）—— */
+.u3-subnav { position: relative; z-index: 5; width: 100%; }
+.u3-sticky { position: fixed; } /* 如果您不需要这条，可以忽略；sticky 行为以 #u3StickyNav 为准 */
+body.u3-sticky-padding .main-content { padding-top: 3.2rem; }
+
+/* —— 让子导航里的文字整体往上 —— */
+/* 普通（非悬浮）版本 */
+#Unit3 .u3-subnav .u3-subnav__inner {
+  align-items: flex-start !important;    /* 由垂直居中改为贴上 */
+  padding-top: 6px !important;           /* 原 18px → 减小 */
+  padding-bottom:30px !important;       /* 适度加大下边距，视觉上“上移” */
+}
+
+/* 悬浮版本（克隆出来的 #u3StickyNav） */
+#u3StickyNav.u3-sticky .u3-subnav__inner {
+  align-items: flex-start !important;
+  padding-top: 4px !important;
+  padding-bottom: 10px !important;
+}
+
+/* 链接本身稍微紧凑一些，进一步抬起视觉重心 */
+#Unit3 .u3-subnav .u3-subnav__link,
+#u3StickyNav.u3-sticky .u3-subnav__link {
+  line-height: 1.15 !important;
+  padding-top: 0 !important;
+  padding-bottom:0 !important;
+}
+
+/* 保险：列表容器也靠上（有些布局里它也会参与垂直对齐） */
+#Unit3 .u3-subnav .u3-subnav__list,
+#u3StickyNav.u3-sticky .u3-subnav__list {
+  align-items: flex-start !important;
+}
+
+
+
+
+/* 窄屏时自动堆叠为单列，避免拥挤 */
+@media (max-width: 900px){
+  .u3-left-grid.gallery{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 响应式：窄屏改为单列 */
+@media (max-width: 900px){
+  .u3-two-col{
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* 小屏处理 */
+@media (max-width: 720px) {
+  .u3-subnav__inner {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .u3-subnav__title {
+    font-size: 18px;
+    letter-spacing: 0.2em;
+  }
+  .u3-subnav__list {
+    flex-wrap: wrap;
+    gap: 16px 20px;
+  }
+  .u3-subnav__link {
+    font-size: 15px;
+  }
 }
 
 /* ========== FOOTER ========== */
